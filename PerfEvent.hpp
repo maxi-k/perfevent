@@ -152,10 +152,14 @@ struct PerfEvent {
    }
 
    double getCounter(const std::string& name) {
-      for (unsigned i=0; i<events.size(); i++)
-         if (names[i]==name)
-            return events[i].readCounter();
-      return -1;
+     auto event = getEvent(name);
+     return event ? event->readCounter() : -1;
+   }
+
+   event* getEvent(const std::string& name) {
+     for (unsigned i = 0; i < events.size(); i++)
+         if (names[i] == name) return &events[i];
+     return nullptr;
    }
 
    static void printCounter(std::ostream& headerOut, std::ostream& dataOut, std::string name, std::string counterValue,bool addComma=true) {
@@ -253,6 +257,7 @@ struct PerfEventBlock {
    uint64_t scale;
    BenchmarkParameters parameters;
    bool printHeader;
+   bool stopped = false;
 
    PerfEventBlock(uint64_t scale = 1, BenchmarkParameters params = {}, bool printHeader = true)
        : scale(scale),
@@ -270,7 +275,7 @@ struct PerfEventBlock {
    }
 
    ~PerfEventBlock() {
-     e->stopCounters();
+     if (!stopped) { e->stopCounters(); };
      std::stringstream header;
      std::stringstream data;
      parameters.printParams(header,data);
