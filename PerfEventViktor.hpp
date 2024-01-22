@@ -140,6 +140,10 @@ struct PerfEvent {
       return std::chrono::duration<double>(stopTime - startTime).count();
    }
 
+   size_t getDurationMicros() {
+      return std::chrono::duration_cast<std::chrono::microseconds>(stopTime - startTime).count();
+   }
+
    double getIPC() {
       return getCounter("instr") / getCounter("cycle");
    }
@@ -231,6 +235,7 @@ struct PerfEventBlock {
       std::stringstream data;
       e.printParams(header,data);
       PerfEvent::printCounter(header,data,"time",e.getDuration());
+      PerfEvent::printCounter(header,data,"time_us",e.getDurationMicros());
       e.printReport(header, data, scale);
       if (e.printHeader) {
          std::cout << header.str() << std::endl;
